@@ -1,5 +1,4 @@
 const axios = require("axios");
-const config = require("../config");
 
 async function GoodyAI(q) {
   try {
@@ -73,7 +72,7 @@ function uuid() {
 
 async function thinkany(prompt) {
   try {
-    const response = await axios.post(config.base_url,
+    const response = await axios.post('https://thinkany.ai/api/chat',
       {
         role: 'user',
         content: prompt,
