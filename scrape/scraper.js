@@ -1,5 +1,79 @@
 const axios = require("axios");
 
+function uuid() {
+  let d = new Date().getTime();
+  let d2 = (performance && performance.now && (performance.now() * 1000)) || 0;
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    let r = Math.random() * 16;
+    if (d > 0) {
+      r = (d + r) % 16 | 0;
+      d = Math.floor(d / 16);
+    } else {
+      r = (d2 + r) % 16 | 0;
+      d2 = Math.floor(d2 / 16);
+    }
+    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+  });
+}
+
+async function blackbox(prompt) {
+  try {
+    const response = await axios.post('https://www.blackbox.ai/api/chat', {
+      messages: [{
+        id: uuid(),
+        content: prompt,
+        role: 'user'
+      }],
+      id: uuid(),
+      previewToken: null,
+      userId: '47b37fe9-1ac9-4097-a719-2cc1a0729b10',
+      codeModelMode: true,
+      agentMode: {},
+      trendingAgentMode: {},
+      isMicMode: false,
+      isChromeExt: false,
+      githubToken: null,
+      clickedAnswer2: false,
+      clickedAnswer3: false,
+      clickedForceWebSearch: false,
+      visitFromDelta: null
+    }, {
+      headers: {
+        "Content-Type": "application/json"
+      }
+    })
+    let result = response.data
+    result = result.replace(/\$@v=v1\.10-rv2\$@\$/g, '')
+    .replace(/Sources:.*/g, '')
+    .replace(/$/g, '')
+    const content = result.match(/content":"(.*?)"/)
+    return content
+  } catch (error) {
+    console.error(error)
+    throw error
+  }
+}
+
+async function luminai(q) {
+    try {
+        const response = await axios.post("https://luminai.siputzx.my.id/", {
+            content: q
+        });
+        return response.data.result;
+    } catch (error) {
+        console.error('Error fetching:', error);
+        throw error;
+    }
+}
+
+luminai("question")
+    .then(result => {
+        return('Result:', result);
+    })
+    .catch(error => {
+        return('Error:', error);
+    });
+
 async function GoodyAI(q) {
   try {
     const headers = {
@@ -54,22 +128,6 @@ async function GoodyAI(q) {
   }
 }
 
-function uuid() {
-  let d = new Date().getTime();
-  let d2 = (performance && performance.now && (performance.now() * 1000)) || 0;
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    let r = Math.random() * 16;
-    if (d > 0) {
-      r = (d + r) % 16 | 0;
-      d = Math.floor(d / 16);
-    } else {
-      r = (d2 + r) % 16 | 0;
-      d2 = Math.floor(d2 / 16);
-    }
-    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
-  });
-}
-
 async function thinkany(prompt) {
   try {
     const response = await axios.post('https://thinkany.ai/api/chat',
@@ -93,4 +151,4 @@ async function thinkany(prompt) {
   }
 }
 
-module.exports = { thinkany, GoodyAI };
+module.exports = { thinkany, GoodyAI, luminai, blackbox };
