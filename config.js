@@ -1,9 +1,8 @@
 const config = {
   author: "Shannz",
-  base_url: "https://thinkany.ai/api/chat",
   messages: {
-    query: "Query parameter is required",
-    url: "Invalid URL",
+    query: "Parameter Query Belum Diisi!!",
+    url: "Parameter Url Belum Diisi!!",
     error: "Internal Server Error"
   }
 };
