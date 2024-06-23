@@ -1,5 +1,5 @@
 const express = require('express');
-const { thinkany, GoodyAI } = require('./scrape/scraper');
+const { thinkany, GoodyAI, luminai, blackbox } = require('./scrape/scraper');
 const config = require('./config');
 const msg = config.messages;
 const app = express();
@@ -37,6 +37,44 @@ app.get('/ai/goody', async (req, res) => {
   }
   try {
     const result = await GoodyAI(query);
+    const response = {
+      status: true,
+      code: 200,
+      author: config.author,
+      result: result
+    };
+    res.json(response);
+  } catch (error) {
+    res.status(500).json({ status: false, code: 500, author: config.author, result: msg.error });
+  }
+});
+
+app.get('/ai/luminai', async (req, res) => {
+  const query = req.query.query;
+  if (!query) {
+    return res.status(400).json({ status: false, code: 400, author: config.author, result: msg.query });
+  }
+  try {
+    const result = await luminai(query);
+    const response = {
+      status: true,
+      code: 200,
+      author: config.author,
+      result: result
+    };
+    res.json(response);
+  } catch (error) {
+    res.status(500).json({ status: false, code: 500, author: config.author, result: msg.error });
+  }
+});
+
+app.get('/ai/blackbox', async (req, res) => {
+  const query = req.query.query;
+  if (!query) {
+    return res.status(400).json({ status: false, code: 400, author: config.author, result: msg.query });
+  }
+  try {
+    const result = await blackbox(query);
     const response = {
       status: true,
       code: 200,
