@@ -1,4 +1,6 @@
-const axios = require("axios");
+const axios = require('axios');
+const cheerio = require('cheerio');
+const qs = require('qs');
 
 function uuid() {
   let d = new Date().getTime();
@@ -14,6 +16,233 @@ function uuid() {
     }
     return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
   });
+}
+
+function generateRandomString(length) {
+    const characters = 'abcdef0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    return result;
+}
+
+function generateRandomNumberString(length) {
+    const characters = '0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    return result;
+}
+
+async function getSearchResults(query) {
+    const url = 'https://aoyo.ai/Api/AISearch/Source';
+    const requestData = {
+        q: query,
+        num: 20,
+        hl: 'id-ID'
+    };
+
+    const headers = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'application/json, text/plain, */*'
+    };
+
+    try {
+        const response = await axios.post(url, qs.stringify(requestData), { headers });
+        return response.data.organic;
+    } catch (error) {
+        return [];
+    }
+}
+
+async function AoyoAi(content) {
+    const searchQuery = content;
+    const searchResults = await getSearchResults(searchQuery);
+
+    const engineContent = searchResults.map((result, index) => ({
+        title: result.title,
+        link: result.link,
+        snippet: result.snippet,
+        sitelinks: result.sitelinks ? result.sitelinks.map(link => ({
+            title: link.title,
+            link: link.link
+        })) : [],
+        position: index + 1
+    }));
+
+    const url = 'https://aoyo.ai/Api/AISearch/AISearch';
+    const requestData = {
+        content: content,
+        id: generateRandomString(32),
+        language: 'id-ID',
+        engineContent: JSON.stringify(engineContent),
+        randomNumber: generateRandomNumberString(17)
+    };
+
+    const headers = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'User-Agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Mobile Safari/537.36',
+        'Referer': 'https://aoyo.ai/search/?q=' + encodeURIComponent(content)
+    };
+
+    try {
+        const response = await axios.post(url, qs.stringify(requestData), { headers });
+        return response.data.replace(/\[START\][\s\S]*$/g, '').trim();
+
+    } catch (error) {
+        return { error: error.message };
+    }
+}
+
+async function LetmeGpt(query) {
+  const encodedQuery = encodeURIComponent(query);
+  const url = `https://letmegpt.com/search?q=${encodedQuery}`;
+
+  try {
+    const response = await axios.get(url);
+    const $ = cheerio.load(response.data);
+    return $('#gptans').text();
+  } catch (error) {
+    console.log('Error:', error);
+    return null;
+  }
+}
+
+const website = axios.create({
+  baseURL: 'https://app.yoursearch.ai',
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
+
+const yousearch = async (searchTerm) => {
+  const requestData = {
+    searchTerm: searchTerm,
+    promptTemplate: `Search term: "{searchTerm}"
+
+Make your language less formal and use emoticons.
+I want you to always use Indonesian slang from Jakarta where the words "you" and "anda" are replaced with "lu" and the word I is replaced with "gw".
+Create a summary of the search results in three paragraphs with reference numbers, which you then list numbered at the bottom.
+Include emojis in the summary.
+Be sure to include the reference numbers in the summary.
+Both in the text of the summary and in the reference list, the reference numbers should look like this: "(1)".
+Formulate simple sentences.
+Include blank lines between the paragraphs.
+Do not reply with an introduction, but start directly with the summary.
+Include emojis in the summary.
+At the end write a hint text where I can find search results as comparison with the above search term with a link to Google search in this format \`See Google results: \` and append the link.
+Below write a tip how I can optimize the search results for my search query.
+I show you in which format this should be structured:
+
+\`\`\`
+<Summary of search results with reference numbers>
+
+Sources:
+(1) <URL of the first reference>
+(2) <URL of the second reference>
+
+<Hint text for further search results with Google link>
+<Tip>
+\`\`\`
+
+Here are the search results:
+{searchResults}`,
+    searchParameters: "{}",
+    searchResultTemplate: `[{order}] "{snippet}"
+URL: {link}`
+  };
+
+  try {
+    const response = await website.post('/api', requestData);
+    return response.data.response;
+  } catch (error) {
+    console.error('Error:', error);
+    throw error;
+  }
+};
+
+function generateRandomID(length) {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+  let randomID = '';
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    randomID += characters.charAt(randomIndex);
+  }
+  return randomID;
+}
+
+const api = axios.create({
+  baseURL: 'https://search.lepton.run/api/',
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
+
+async function leptonAi(query) {
+  try {
+    const rid = generateRandomID(10);
+    const postData = { query, rid };
+    const response = await api.post('query', postData);
+    
+    const llmResponseRegex = /__LLM_RESPONSE__([\s\S]*?)__RELATED_QUESTIONS__/;
+    const llmResponseMatch = response.data.match(llmResponseRegex);
+
+    if (llmResponseMatch && llmResponseMatch[1]) {
+      let llmResponse = llmResponseMatch[1].trim();
+      llmResponse = llmResponse.replace(/__LLM_RESPONSE__|__RELATED_QUESTIONS__/g, '').trim();
+      return llmResponse;
+    } else {
+      throw new Error("No LLM response found.");
+    }
+  } catch (error) {
+    throw new Error('Error fetching LLM response: ' + error.message);
+  }
+}
+
+async function Simsimi(text) {
+  const url = 'https://simsimi.vn/web/simtalk';
+  const headers = {
+    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+    Accept: 'application/json, text/javascript, */*; q=0.01',
+    'X-Requested-With': 'XMLHttpRequest',
+    'User-Agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Mobile Safari/537.36',
+    Referer: 'https://simsimi.vn/'
+  };
+
+  try {
+    const response = await axios.post(url, `text=${encodeURIComponent(text)}&lc=id`, { headers });
+    return response.data.success;
+  } catch (error) {
+    console.error('Error asking SimSimi:', error);
+    throw error;
+  }
+}
+
+async function CgtAi(text) {
+  try {
+    const conversation_uuid = uuid();
+
+    const requestData = {
+      conversation_uuid: conversation_uuid,
+      text: text,
+      sent_messages: 1
+    };
+
+    const config = {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        'Accept': '*/*',
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    };
+
+    const response = await axios.post('https://www.timospecht.de/wp-json/cgt/v1/chat', qs.stringify(requestData), config);
+    return response.data;
+  } catch (error) {
+    throw new Error('Terjadi kesalahan:', error);
+  }
 }
 
 async function blackbox(prompt) {
@@ -151,4 +380,4 @@ async function thinkany(prompt) {
   }
 }
 
-module.exports = { thinkany, GoodyAI, luminai, blackbox };
+module.exports = { thinkany, GoodyAI, luminai, blackbox, CgtAi, Simsimi, leptonAi, yousearch, LetmeGpt, AoyoAi };
