@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 3000;
 app.set('json spaces', 4);
 
 app.get('/', (req, res) => {
-  res.redirect('http://shannmoderz.rf.gd');
+  res.redirect('https://shannmoderz.rf.gd');
 });
 
 app.get('/ai/claude', async (req, res) => {
