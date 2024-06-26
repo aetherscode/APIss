@@ -26,7 +26,7 @@ app.use((req, res, next) => {
 });
 
 app.get('/', (req, res) => {
-  res.redirect('http://shannmoderz.rf.gd');
+  res.redirect('https://shannmoderz.rf.gd');
 });
 
 // Endpoint untuk mendapatkan statistik
