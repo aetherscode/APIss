@@ -1,6 +1,7 @@
 const express = require('express');
-const cors = require('cors'); // Tambahkan ini
+const cors = require('cors'); 
 const { thinkany, GoodyAI, luminai, blackbox, CgtAi, Simsimi, leptonAi, yousearch, LetmeGpt, AoyoAi } = require('./scrape/scraper');
+const { PlayStore, BukaLapak } = require('./scrape/search');
 const config = require('./config');
 const msg = config.messages;
 const app = express();
@@ -8,19 +9,16 @@ const PORT = process.env.PORT || 3000;
 
 app.set('json spaces', 4);
 
-// Variabel untuk melacak statistik
 let totalRequests = 0;
 let totalVisitors = 0;
 const visitors = new Set();
 
-// Middleware untuk mengizinkan CORS
 const corsOptions = {
-    origin: 'https://shannmoderz.rf.gd', // Ganti dengan domain Anda
+    origin: 'https://shannmoderz.rf.gd',
     optionsSuccessStatus: 200
 };
 app.use(cors(corsOptions));
 
-// Middleware untuk melacak statistik
 app.use((req, res, next) => {
     totalRequests++;
     if (req.path === '/') {
@@ -37,7 +35,6 @@ app.get('/', (req, res) => {
     res.redirect('https://shannmoderz.rf.gd');
 });
 
-// Endpoint untuk mendapatkan statistik
 app.get('/stats', (req, res) => {
     res.json({
         status: true,
@@ -50,7 +47,7 @@ app.get('/stats', (req, res) => {
     });
 });
 
-const handleAIRequest = (aiFunction) => async (req, res) => {
+const requestan = (aiFunction) => async (req, res) => {
     const query = req.query.query;
     if (!query) {
         return res.status(400).json({ status: false, code: 400, author: config.author, result: msg.query });
@@ -63,16 +60,18 @@ const handleAIRequest = (aiFunction) => async (req, res) => {
     }
 };
 
-app.get('/ai/claude', handleAIRequest(thinkany));
-app.get('/ai/goody', handleAIRequest(GoodyAI));
-app.get('/ai/luminai', handleAIRequest(luminai));
-app.get('/ai/blackbox', handleAIRequest(blackbox));
-app.get('/ai/cgt', handleAIRequest(CgtAi));
-app.get('/ai/simsimi', handleAIRequest(Simsimi));
-app.get('/ai/lepton', handleAIRequest(leptonAi));
-app.get('/ai/yousearch', handleAIRequest(yousearch));
-app.get('/ai/letmegpt', handleAIRequest(LetmeGpt));
-app.get('/ai/aoyo', handleAIRequest(AoyoAi));
+app.get('/ai/claude', requestan(thinkany));
+app.get('/ai/goody', requestan(GoodyAI));
+app.get('/ai/luminai', requestan(luminai));
+app.get('/ai/blackbox', requestan(blackbox));
+app.get('/ai/cgt', requestan(CgtAi));
+app.get('/ai/simsimi', requestan(Simsimi));
+app.get('/ai/lepton', requestan(leptonAi));
+app.get('/ai/yousearch', requestan(yousearch));
+app.get('/ai/letmegpt', requestan(LetmeGpt));
+app.get('/ai/aoyo', requestan(AoyoAi));
+app.get('/search/playstore', requestan(PlayStore));
+app.get('./search/bukalapak', requestan(BukaLapak));
 
 app.use((err, req, res, next) => {
     console.error(err.stack);
