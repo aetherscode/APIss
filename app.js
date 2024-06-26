@@ -7,198 +7,68 @@ const PORT = process.env.PORT || 3000;
 
 app.set('json spaces', 4);
 
+// Variabel untuk melacak statistik
+let totalRequests = 0;
+let totalVisitors = 0;
+const visitors = new Set();
+
+// Middleware untuk melacak statistik
+app.use((req, res, next) => {
+  totalRequests++;
+  if (req.path === '/') {
+    const visitorIP = req.ip;
+    if (!visitors.has(visitorIP)) {
+      visitors.add(visitorIP);
+      totalVisitors++;
+    }
+  }
+  next();
+});
+
 app.get('/', (req, res) => {
-  res.redirect('https://shannmoderz.rf.gd');
+  res.redirect('http://shannmoderz.rf.gd');
 });
 
-app.get('/ai/claude', async (req, res) => {
+// Endpoint untuk mendapatkan statistik
+app.get('/stats', (req, res) => {
+  res.json({
+    status: true,
+    code: 200,
+    author: config.author,
+    result: {
+      totalRequests,
+      totalVisitors
+    }
+  });
+});
+
+const handleAIRequest = (aiFunction) => async (req, res) => {
   const query = req.query.query;
   if (!query) {
     return res.status(400).json({ status: false, code: 400, author: config.author, result: msg.query });
   }
   try {
-    const result = await thinkany(query);
-    const response = {
-      status: true,
-      code: 200,
-      author: config.author,
-      result: result
-    };
-    res.json(response);
+    const result = await aiFunction(query);
+    res.json({ status: true, code: 200, author: config.author, result: result });
   } catch (error) {
     res.status(500).json({ status: false, code: 500, author: config.author, result: msg.error });
   }
-});
+};
 
-app.get('/ai/goody', async (req, res) => {
-  const query = req.query.query;
-  if (!query) {
-    return res.status(400).json({ status: false, code: 400, author: config.author, result: msg.query });
-  }
-  try {
-    const result = await GoodyAI(query);
-    const response = {
-      status: true,
-      code: 200,
-      author: config.author,
-      result: result
-    };
-    res.json(response);
-  } catch (error) {
-    res.status(500).json({ status: false, code: 500, author: config.author, result: msg.error });
-  }
-});
+app.get('/ai/claude', handleAIRequest(thinkany));
+app.get('/ai/goody', handleAIRequest(GoodyAI));
+app.get('/ai/luminai', handleAIRequest(luminai));
+app.get('/ai/blackbox', handleAIRequest(blackbox));
+app.get('/ai/cgt', handleAIRequest(CgtAi));
+app.get('/ai/simsimi', handleAIRequest(Simsimi));
+app.get('/ai/lepton', handleAIRequest(leptonAi));
+app.get('/ai/yousearch', handleAIRequest(yousearch));
+app.get('/ai/letmegpt', handleAIRequest(LetmeGpt));
+app.get('/ai/aoyo', handleAIRequest(AoyoAi));
 
-app.get('/ai/luminai', async (req, res) => {
-  const query = req.query.query;
-  if (!query) {
-    return res.status(400).json({ status: false, code: 400, author: config.author, result: msg.query });
-  }
-  try {
-    const result = await luminai(query);
-    const response = {
-      status: true,
-      code: 200,
-      author: config.author,
-      result: result
-    };
-    res.json(response);
-  } catch (error) {
-    res.status(500).json({ status: false, code: 500, author: config.author, result: msg.error });
-  }
-});
-
-app.get('/ai/blackbox', async (req, res) => {
-  const query = req.query.query;
-  if (!query) {
-    return res.status(400).json({ status: false, code: 400, author: config.author, result: msg.query });
-  }
-  try {
-    const result = await blackbox(query);
-    const response = {
-      status: true,
-      code: 200,
-      author: config.author,
-      result: result
-    };
-    res.json(response);
-  } catch (error) {
-    res.status(500).json({ status: false, code: 500, author: config.author, result: msg.error });
-  }
-});
-
-app.get('/ai/cgt', async (req, res) => {
-  const query = req.query.query;
-  if (!query) {
-    return res.status(400).json({ status: false, code: 400, author: config.author, result: msg.query });
-  }
-  try {
-    const result = await CgtAi(query);
-    const response = {
-      status: true,
-      code: 200,
-      author: config.author,
-      result: result
-    };
-    res.json(response);
-  } catch (error) {
-    res.status(500).json({ status: false, code: 500, author: config.author, result: msg.error });
-  }
-});
-
-app.get('/ai/simsimi', async (req, res) => {
-  const query = req.query.query;
-  if (!query) {
-    return res.status(400).json({ status: false, code: 400, author: config.author, result: msg.query });
-  }
-  try {
-    const result = await Simsimi(query);
-    const response = {
-      status: true,
-      code: 200,
-      author: config.author,
-      result: result
-    };
-    res.json(response);
-  } catch (error) {
-    res.status(500).json({ status: false, code: 500, author: config.author, result: msg.error });
-  }
-});
-
-app.get('/ai/lepton', async (req, res) => {
-  const query = req.query.query;
-  if (!query) {
-    return res.status(400).json({ status: false, code: 400, author: config.author, result: msg.query });
-  }
-  try {
-    const result = await leptonAi(query);
-    const response = {
-      status: true,
-      code: 200,
-      author: config.author,
-      result: result
-    };
-    res.json(response);
-  } catch (error) {
-    res.status(500).json({ status: false, code: 500, author: config.author, result: msg.error });
-  }
-});
-
-app.get('/ai/yousearch', async (req, res) => {
-  const query = req.query.query;
-  if (!query) {
-    return res.status(400).json({ status: false, code: 400, author: config.author, result: msg.query });
-  }
-  try {
-    const result = await yousearch(query);
-    const response = {
-      status: true,
-      code: 200,
-      author: config.author,
-      result: result
-    };
-    res.json(response);
-  } catch (error) {
-    res.status(500).json({ status: false, code: 500, author: config.author, result: msg.error });
-  }
-});
-
-app.get('/ai/letmegpt', async (req, res) => {
-  const query = req.query.query;
-  if (!query) {
-    return res.status(400).json({ status: false, code: 400, author: config.author, result: msg.query });
-  }
-  try {
-    const result = await LetmeGpt(query);
-    const response = {
-      status: true,
-      code: 200,
-      author: config.author,
-      result: result
-    };
-    res.json(response);
-  } catch (error) {
-    res.status(500).json({ status: false, code: 500, author: config.author, result: msg.error });
-  }
-});
-
-app.get('/ai/aoyo', async (req, res) => {
-  const query = req.query.query;
-  if (!query) {
-    return res.status(400).json({ status: false, code: 400, author: config.author, result: msg.query });
-  }
-  try {
-    const result = await AoyoAi(query);
-    const response = {
-      status: true,
-      code: 200,
-      author: config.author,
-      result: result
-    };
-    res.json(response);
-  } catch (error) {
-    res.status(500).json({ status: false, code: 500, author: config.author, result: msg.error });
-  }
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ status: false, code: 500, author: config.author, result: msg.error });
 });
 
 app.listen(PORT, () => {
