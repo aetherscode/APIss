@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors'); 
-const { thinkany, GoodyAI, luminai, blackbox, CgtAi, Simsimi, leptonAi, yousearch, LetmeGpt, AoyoAi } = require('./scrape/scraper');
-const { PlayStore, BukaLapak } = require('./scrape/search');
+const { thinkany, tudouai, useadrenaline, GoodyAI, luminai, blackbox, CgtAi, Simsimi, leptonAi, yousearch, LetmeGpt, AoyoAi } = require('./scrape/ai');
+const { PlayStore, BukaLapak, happymod, stickersearch, filmapik21, webtoons, resep, gore, mangatoon, android1, wattpad } = require('./scrape/search');
 const config = require('./config');
 const msg = config.messages;
 const app = express();
@@ -60,6 +60,23 @@ const requestan = (aiFunction) => async (req, res) => {
     }
 };
 
+app.get('/ai/tudou', async (req, res) => {
+    const query = req.query.query
+    const prompt = req.query.prompt
+    if (!query) {
+        return res.status(400).json({ status: false, code: 400, author: config.author, result: msg.query });
+    }
+    if (!prompt) {
+        return res.status(400).json({ status: false, code: 400, author: config.author, result: msg.prompt });
+    }
+    try {
+        const result = await tudouai(query, prompt);
+        res.json({ status: true, code: 200, author: config.author, result: result });
+    } catch (error) {
+        res.status(500).json({ status: false, code: 500, author: config.author, result: msg.error });
+    }
+};
+
 app.get('/ai/claude', requestan(thinkany));
 app.get('/ai/goody', requestan(GoodyAI));
 app.get('/ai/luminai', requestan(luminai));
@@ -70,8 +87,18 @@ app.get('/ai/lepton', requestan(leptonAi));
 app.get('/ai/yousearch', requestan(yousearch));
 app.get('/ai/letmegpt', requestan(LetmeGpt));
 app.get('/ai/aoyo', requestan(AoyoAi));
+app.get('/ai/prod', requestan(useadrenaline));
 app.get('/search/playstore', requestan(PlayStore));
-app.get('./search/bukalapak', requestan(BukaLapak));
+app.get('/search/bukalapak', requestan(BukaLapak));
+app.get('/search/happymod', requestan(happymod));
+app.get('/search/stickersearch', requestan(stickersearch));
+app.get('/search/filmapik21', requestan(filmapik21));
+app.get('/search/webtoons', requestan(webtoons));
+app.get('/search/cariresep', requestan(resep));
+app.get('/search/segore', requestan(gore));
+app.get('/search/mangatoon', requestan(mangatoon));
+app.get('/search/wattpad', requestan(wattpad));
+app.get('/search/android1', requestan(android1));
 
 app.use((err, req, res, next) => {
     console.error(err.stack);
