@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors'); // Tambahkan ini
 const { thinkany, GoodyAI, luminai, blackbox, CgtAi, Simsimi, leptonAi, yousearch, LetmeGpt, AoyoAi } = require('./scrape/scraper');
 const config = require('./config');
 const msg = config.messages;
@@ -12,47 +13,54 @@ let totalRequests = 0;
 let totalVisitors = 0;
 const visitors = new Set();
 
+// Middleware untuk mengizinkan CORS
+const corsOptions = {
+    origin: 'https://shannmoderz.rf.gd', // Ganti dengan domain Anda
+    optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
+
 // Middleware untuk melacak statistik
 app.use((req, res, next) => {
-  totalRequests++;
-  if (req.path === '/') {
-    const visitorIP = req.ip;
-    if (!visitors.has(visitorIP)) {
-      visitors.add(visitorIP);
-      totalVisitors++;
+    totalRequests++;
+    if (req.path === '/') {
+        const visitorIP = req.ip;
+        if (!visitors.has(visitorIP)) {
+            visitors.add(visitorIP);
+            totalVisitors++;
+        }
     }
-  }
-  next();
+    next();
 });
 
 app.get('/', (req, res) => {
-  res.redirect('https://shannmoderz.rf.gd');
+    res.redirect('https://shannmoderz.rf.gd');
 });
 
 // Endpoint untuk mendapatkan statistik
 app.get('/stats', (req, res) => {
-  res.json({
-    status: true,
-    code: 200,
-    author: config.author,
-    result: {
-      totalRequests,
-      totalVisitors
-    }
-  });
+    res.json({
+        status: true,
+        code: 200,
+        author: config.author,
+        result: {
+            totalRequests,
+            totalVisitors
+        }
+    });
 });
 
 const handleAIRequest = (aiFunction) => async (req, res) => {
-  const query = req.query.query;
-  if (!query) {
-    return res.status(400).json({ status: false, code: 400, author: config.author, result: msg.query });
-  }
-  try {
-    const result = await aiFunction(query);
-    res.json({ status: true, code: 200, author: config.author, result: result });
-  } catch (error) {
-    res.status(500).json({ status: false, code: 500, author: config.author, result: msg.error });
-  }
+    const query = req.query.query;
+    if (!query) {
+        return res.status(400).json({ status: false, code: 400, author: config.author, result: msg.query });
+    }
+    try {
+        const result = await aiFunction(query);
+        res.json({ status: true, code: 200, author: config.author, result: result });
+    } catch (error) {
+        res.status(500).json({ status: false, code: 500, author: config.author, result: msg.error });
+    }
 };
 
 app.get('/ai/claude', handleAIRequest(thinkany));
@@ -67,11 +75,11 @@ app.get('/ai/letmegpt', handleAIRequest(LetmeGpt));
 app.get('/ai/aoyo', handleAIRequest(AoyoAi));
 
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ status: false, code: 500, author: config.author, result: msg.error });
+    console.error(err.stack);
+    res.status(500).json({ status: false, code: 500, author: config.author, result: msg.error });
 });
 
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-  console.log(`Author: ${config.author}`);
+    console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`Author: ${config.author}`);
 });
