@@ -95,10 +95,27 @@ app.get('/search/stickersearch', requestan(stickersearch));
 app.get('/search/filmapik21', requestan(filmapik21));
 app.get('/search/webtoons', requestan(webtoons));
 app.get('/search/cariresep', requestan(resep));
-app.get('/search/segore', requestan(gore));
+app.get('/search/seegore', requestan(gore));
 app.get('/search/mangatoon', requestan(mangatoon));
 app.get('/search/wattpad', requestan(wattpad));
 app.get('/search/android1', requestan(android1));
+
+app.get('/endpoint', (req, res) => {
+  const endpoints = [];
+  app._router.stack.forEach((layer) => {
+    if (layer.route) {
+      const methods = [];
+      for (const method in layer.route.methods) {
+        methods.push(method.toUpperCase());
+      }
+      endpoints.push({
+        path: layer.route.path,
+        methods: methods,
+      });
+    }
+  });
+  res.json(endpoints);
+});
 
 app.use((err, req, res, next) => {
     console.error(err.stack);
