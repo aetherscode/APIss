@@ -75,7 +75,7 @@ app.get('/ai/tudou', async (req, res) => {
     } catch (error) {
         res.status(500).json({ status: false, code: 500, author: config.author, result: msg.error });
     }
-};
+});
 
 app.get('/ai/claude', requestan(thinkany));
 app.get('/ai/goody', requestan(GoodyAI));
