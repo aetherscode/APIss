@@ -321,12 +321,10 @@ async function mangatoon(search) {
 			let comic_name = $(b).find('div.recommend-comics-title > span').text();
 			let comic_type = $(b).find('div.comics-type > span').text().slice(1).split(/ /g).join("");
 			let comic_url = $(b).find('a').attr('href');
-			let comic_thumb = $(b).find('img').attr('src');
 			const result = {
 				comic_name,
 				comic_type,
-				comic_url: 'https://mangatoon.mobi' + comic_url,
-				comic_thumb
+				comic_url: 'https://mangatoon.mobi' + comic_url
 			};
 			hasil.push(result);
 		});
