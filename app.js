@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors'); 
+const cron = require('node-cron');
 const { thinkany, tudouai, useadrenaline, GoodyAI, luminai, blackbox, CgtAi, Simsimi, leptonAi, yousearch, LetmeGpt, AoyoAi } = require('./scrape/ai');
 const { PlayStore, BukaLapak, happymod, stickersearch, filmapik21, webtoons, resep, gore, mangatoon, android1, wattpad } = require('./scrape/search');
 const config = require('./config');
@@ -120,6 +121,13 @@ app.get('/endpoint', (req, res) => {
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ status: false, code: 500, author: config.author, result: msg.error });
+});
+
+cron.schedule('0 0 * * *', () => {
+  totalRequests = 0;
+  totalVisitors = 0;
+  visitors.clear();
+  console.log('Resetting counters...');
 });
 
 app.listen(PORT, () => {
