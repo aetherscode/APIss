@@ -49,7 +49,7 @@ app.get('/stats', (req, res) => {
     });
 });
 
-const reqmaker = (aiFunction) => async (req, res) => {
+const reqmaker = (link) => async (req, res) => {
     const query = req.query.query;
     const link = req.query.link;
     if (!query && !link) {
@@ -115,7 +115,7 @@ app.get('/search/seegore', requestan(gore));
 app.get('/search/mangatoon', requestan(mangatoon));
 app.get('/search/wattpad', requestan(wattpad));
 app.get('/search/android1', requestan(android1));
-app.get('/maker/blackpinklogo', reqmaker('https://en.ephoto360.com/create-blackpink-logo-online-free-607.html', query));
+app.get('/maker/blackpinklogo', reqmaker('https://en.ephoto360.com/create-blackpink-logo-online-free-607.html'));
 
 app.get('/endpoint', (req, res) => {
   const endpoints = [];
