@@ -204,7 +204,7 @@ async function webtoons(query) {
 						genre: genre[i],
 						author: author[i],
 						likes: likes[i],
-						link: 'https://www.webtoons.com' + link[i]
+						link: link[i]
 					})
 				}
 				if (likes == '') {
