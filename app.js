@@ -3,6 +3,7 @@ const cors = require('cors');
 const cron = require('node-cron');
 const { thinkany, tudouai, useadrenaline, GoodyAI, luminai, blackbox, CgtAi, Simsimi, leptonAi, yousearch, LetmeGpt, AoyoAi } = require('./scrape/ai');
 const { PlayStore, BukaLapak, happymod, stickersearch, filmapik21, webtoons, resep, gore, mangatoon, android1, wattpad } = require('./scrape/search');
+const { ephoto } = require('./scrape/ephoto');
 const config = require('./config');
 const msg = config.messages;
 const app = express();
@@ -47,6 +48,20 @@ app.get('/stats', (req, res) => {
         }
     });
 });
+
+const reqmaker = (aiFunction) => async (req, res) => {
+    const query = req.query.query;
+    const link = req.query.link;
+    if (!query && !link) {
+        return res.status(400).json({ status: false, code: 400, author: config.author, result: msg.query });
+    }
+    try {
+        const result = await ephoto(link, query);
+        res.redirect(result);
+    } catch (error) {
+        res.status(500).json({ status: false, code: 500, author: config.author, result: msg.error });
+    }
+};
 
 const requestan = (aiFunction) => async (req, res) => {
     const query = req.query.query;
@@ -100,6 +115,7 @@ app.get('/search/seegore', requestan(gore));
 app.get('/search/mangatoon', requestan(mangatoon));
 app.get('/search/wattpad', requestan(wattpad));
 app.get('/search/android1', requestan(android1));
+app.get('/maker/blackpinklogo', reqmaker('https://en.ephoto360.com/create-blackpink-logo-online-free-607.html', query));
 
 app.get('/endpoint', (req, res) => {
   const endpoints = [];
