@@ -1,5 +1,5 @@
 const config = {
-  author: "Shannz",
+  author: "AethersCode",
   messages: {
     query: "Parameter Query Belum Diisi!!",
     url: "Parameter Url Belum Diisi!!",
